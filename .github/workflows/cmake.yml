@@ -3,7 +3,7 @@ name: 'bulk_server'
 on:
   push:
     branches:
-      - master
+      - main
       - feature/github_actions
 
 jobs:

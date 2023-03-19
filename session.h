@@ -13,9 +13,9 @@ template<typename Functor>
 void async_write_data(std::unique_ptr<connection_with_data> &&c,
                       const Functor &f) {
   auto &d = c->data;
-  boost::asio::async_write(
-        c->socket, boost::asio::buffer(d, d.size()),
-        task_wrapped_with_connection<Functor>(std::move(c), f));
+//  boost::asio::async_write(
+//        c->socket, boost::asio::buffer(d, d.size()),
+//        task_wrapped_with_connection<Functor>(std::move(c), f));
 }
 
 template<typename Functor>
@@ -25,9 +25,9 @@ void async_read_data(std::unique_ptr<connection_with_data> &&c,
   auto &d = c->data;
   char *p = d.empty() ? nullptr : &d.front();
 
-  boost::asio::async_read(
-        c->socket, boost::asio::buffer(p, d.size()),
-        task_wrapped_with_connection<Functor>(std::move(c), f));
+//  boost::asio::async_read(
+//        c->socket, boost::asio::buffer(p, d.size()),
+//        task_wrapped_with_connection<Functor>(std::move(c), f));
 }
 
 template <class Functor>
@@ -41,12 +41,12 @@ void async_read_data_at_least(std::unique_ptr<connection_with_data>&& c,
 
   boost::asio::ip::tcp::socket& s = c->socket;
 
-  boost::asio::async_read(
-        s,
-        boost::asio::buffer(p, at_most),
-        boost::asio::transfer_at_least(at_least_bytes),
-        task_wrapped_with_connection<Functor>(std::move(c), f)
-        );
+//  boost::asio::async_read(
+//        s,
+//        boost::asio::buffer(p, at_most),
+//        boost::asio::transfer_at_least(at_least_bytes),
+//        task_wrapped_with_connection<Functor>(std::move(c), f)
+//        );
 }
 
 void process_server_response(

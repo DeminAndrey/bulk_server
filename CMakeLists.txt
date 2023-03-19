@@ -50,10 +50,11 @@ target_include_directories(server
   PRIVATE ${Boost_INCLUDE_DIR})
 
 target_link_libraries(server
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/async/async.lib
   PRIVATE Boost::boost)
 
 add_executable(client
+  async/async.h
+  async/async.cxx
   session.h
   session.cxx
   task_processor.h)
@@ -75,7 +76,6 @@ target_include_directories(client
   PRIVATE ${Boost_INCLUDE_DIR})
 
 target_link_libraries(client
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/async/async.lib
   PRIVATE Boost::boost)
 
 install(TARGETS server RUNTIME DESTINATION bin)
