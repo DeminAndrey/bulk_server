@@ -13,7 +13,7 @@ static const char *RECEIVE = "receive";
 namespace po = boost::program_options;
 
 namespace {
-std::string parse_sequence(const std::string &seq) {
+std::vector<std::string> parse_sequence(const std::string &seq) {
   std::string str = seq;
   boost::trim(str);
   if (str.empty()) {
@@ -37,12 +37,12 @@ std::string parse_sequence(const std::string &seq) {
     throw std::range_error("The second argument is greater than the first");
   }
 
-  std::string buffer;
+  std::vector<std::string> commands;
   for (int i = start; i < end; ++i) {
-    buffer.append(std::to_string(i)).append("\n");
+    commands.push_back(std::to_string(i));
   }
 
-  return buffer;
+  return commands;
 }
 }
 
@@ -95,21 +95,27 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  try {
-    buffer = var_map.count(RECEIVE)
-        ? var_map[RECEIVE].as<std::string>()
-        : parse_sequence(var_map[SEQUENCE].as<std::string>());
-  }
-  catch (const std::exception &ex) {
-    std::cerr << "Error while parsing sequence: " << ex.what();
-
-    return 1;
-  }
-
   port = var_map[PORT].as<unsigned>();
-  if (!buffer.empty()) {
-    auto connection = session::create_connection(port);
-    session::send_data(connection, buffer);
+  if (var_map.count(RECEIVE)) {
+    auto buffer = var_map[RECEIVE].as<std::string>();
+    if (!buffer.empty()) {
+      auto connection = session::create_connection(port);
+      session::send_data(connection, buffer);
+    }
+  }
+  else {
+    try {
+      auto connection = session::create_connection(port);
+      for (const auto &buffer : parse_sequence(
+             var_map[SEQUENCE].as<std::string>())) {
+        session::send_data(connection, buffer);
+      }
+    }
+    catch (const std::exception &ex) {
+      std::cerr << "Error while parsing sequence: " << ex.what();
+
+      return 1;
+    }
   }
 
   return 0;
