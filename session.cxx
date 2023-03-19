@@ -7,8 +7,8 @@
 
 static const char *HELP = "help";
 static const char *PORT = "port";
-static const char *SEQUENCE = "seq";
-static const char *RECEIVE = "rec";
+static const char *SEQUENCE = "sequence";
+static const char *RECEIVE = "receive";
 
 namespace po = boost::program_options;
 
