@@ -11,38 +11,74 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 find_package(Boost)
 
-add_executable(${PROJECT_NAME}
-  async.h
-  async.cxx
+add_executable(server
   command_processor.h
   output.h
-  task_processor.h
-  task_receiver.h
-  task_sender.h
-  main.cxx)
+  server.h
+  server.cxx
+  task_processor.h)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -Wall -pedantic")
-set_target_properties(${PROJECT_NAME} PROPERTIES
+set_target_properties(server PROPERTIES
                 CXX_STANDARD 17
                 CXX_STANDARD_REQUIRED ON
                 COMPILE_OPTIONS "-O0;-Wall;"
 )
 
-target_link_libraries(${PROJECT_NAME}
+option(CHECK_DOXYGEN "enable doc generation" ON)
+
+if (${CHECK_DOXYGEN} STREQUAL ON)
+    find_package(Doxygen)
+    if (DOXYGEN_FOUND)
+        set(DOXYFILE ${CMAKE_SOURCE_DIR}/Doxyfile)
+        add_custom_target(doc_doxygen ALL
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Generating API documentation with Doxygen")
+        unset(DOXYFILE)
+    endif()
+endif()
+
+target_link_libraries(server
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
-target_include_directories(${PROJECT_NAME}
+target_include_directories(server
   PRIVATE "${CMAKE_BINARY_DIR}")
 
-target_include_directories(${PROJECT_NAME}
+target_include_directories(server
   PRIVATE ${Boost_INCLUDE_DIR})
 
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-  Boost::boost)
+target_link_libraries(server
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/async/async.lib
+  PRIVATE Boost::boost)
 
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+add_executable(client
+  session.h
+  session.cxx
+  task_processor.h)
+
+set_target_properties(client PROPERTIES
+                CXX_STANDARD 17
+                CXX_STANDARD_REQUIRED ON
+                COMPILE_OPTIONS "-O0;-Wall;"
+)
+
+target_link_libraries(client
+    ${CMAKE_THREAD_LIBS_INIT}
+)
+
+target_include_directories(client
+  PRIVATE "${CMAKE_BINARY_DIR}")
+
+target_include_directories(client
+  PRIVATE ${Boost_INCLUDE_DIR})
+
+target_link_libraries(client
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/async/async.lib
+  PRIVATE Boost::boost)
+
+install(TARGETS server RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 

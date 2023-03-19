@@ -1,5 +1,4 @@
-#include "task_sender.h"
-#include "task_receiver.h"
+#include "server.h"
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -19,17 +18,9 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  std::string buffer;
-  std::cin >> buffer;
-  auto size = buffer.length();
-
-  auto connection = create_connection(port, bulk_size);
-  send_data(connection, buffer);
-
-  task_processor::add_listener(port, &data_handler::on_connection_accept);
+  task_processor::add_listener(
+        port, bulk_size, &data_handler::on_connection_accept);
   task_processor::start();
-
-  disconnect(std::move(connection));
 
   return 0;
 }

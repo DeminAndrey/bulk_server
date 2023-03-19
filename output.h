@@ -24,13 +24,47 @@ struct block_command {
   std::vector<command> commands;
 };
 
-std::string join(const std::vector<command>& v) {
+static std::string join(const std::vector<command>& v) {
   return std::accumulate(v.begin(), v.end(), std::string(),
                          [](std::string &s, const command &com) {
     return s.empty() ? s.append(com.text)
                      : s.append(", ").append(com.text);
   });
 }
+
+class command_queue {
+  std::deque<block_command> m_blocks;
+  std::mutex m_mutex;
+  std::condition_variable m_condition;
+
+public:
+
+  void push_command(const block_command &block) {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_blocks.push_back(block);
+    lock.unlock();
+
+    m_condition.notify_one();
+  }
+
+  block_command pop_command() {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    while (m_blocks.empty()) {
+      m_condition.wait(lock);
+    }
+
+    block_command ret = m_blocks.front();
+    m_blocks.pop_front();
+
+    return ret;
+  }
+
+  bool is_empty() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_blocks.empty();
+  }
+};
+
 
 /**
  * @brief класс вывода команд в консоль
@@ -50,12 +84,14 @@ public:
   }
 
 private:
+  static command_queue m_context;
+
   console_output(const console_output &) = delete;
   console_output &operator=(const console_output &) = delete;
 
   static void print_block() {
     while (!m_context.is_empty()) {
-      auto block = m_context.try_pop_command();
+      auto block = m_context.pop_command();
       auto output = BULK + join(block.commands);
       std::cout << output << std::endl;
     }
@@ -77,7 +113,7 @@ public:
 
   static void write() {
     while (!m_context.is_empty()) {
-      auto block = m_context.try_pop_command();
+      auto block = m_context.pop_command();
       write_block(block);
     }
   }
@@ -113,5 +149,5 @@ private:
   }
 };
 
-command_queue console_output::m_context;
-command_queue file_writer::m_context;
+inline command_queue console_output::m_context;
+inline command_queue file_writer::m_context;
