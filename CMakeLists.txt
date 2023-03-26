@@ -10,8 +10,13 @@ configure_file(version.h.in version.h)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 find_package(Boost)
+find_package(Boost
+  COMPONENTS
+  program_options)
 
 add_executable(server
+  async/async.h
+  async/async.cxx
   command_processor.h
   output.h
   server.h
@@ -76,9 +81,11 @@ target_include_directories(client
   PRIVATE ${Boost_INCLUDE_DIR})
 
 target_link_libraries(client
-  PRIVATE Boost::boost)
+  PRIVATE Boost::boost
+  PRIVATE Boost::program_options)
 
 install(TARGETS server RUNTIME DESTINATION bin)
+install(TARGETS client RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 

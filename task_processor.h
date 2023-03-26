@@ -9,34 +9,35 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/interruption.hpp>
 
 namespace detail {
 
 template <class T>
 struct task_wrapped {
+
 private:
-    T task_unwrapped_;
+  T task_unwrapped_;
 
 public:
-    explicit task_wrapped(const T& f)
-        : task_unwrapped_(f)
-    {}
+  explicit task_wrapped(const T& f)
+    : task_unwrapped_(f) {
+  }
 
-    void operator()() const {
-        try {
-            boost::this_thread::interruption_point();
-        } catch(const boost::thread_interrupted&){}
-
-        try {
-            task_unwrapped_();
-        } catch (const std::exception& e) {
-            std::cerr<< "Exception: " << e.what() << '\n';
-        } catch (const boost::thread_interrupted&) {
-            std::cerr<< "Thread interrupted\n";
-        } catch (...) {
-            std::cerr<< "Unknown exception\n";
-        }
+  void operator()() const {
+    try {
+      task_unwrapped_();
     }
+    catch (const std::exception& e) {
+      std::cerr<< "Exception: " << e.what() << '\n';
+    }
+    catch (const boost::thread_interrupted&) {
+      std::cerr<< "Thread interrupted\n";
+    }
+    catch (...) {
+      std::cerr<< "Unknown exception\n";
+    }
+  }
 };
 
 template <class T>
