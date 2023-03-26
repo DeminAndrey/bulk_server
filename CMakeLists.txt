@@ -11,8 +11,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
 find_package(Boost
   COMPONENTS
-  program_options
-  thread)
+  program_options)
 
 add_executable(server
   async/async.h
@@ -55,8 +54,7 @@ target_include_directories(server
   PRIVATE ${Boost_INCLUDE_DIR})
 
 target_link_libraries(server
-  PRIVATE Boost::boost
-  PRIVATE Boost::thread)
+  PRIVATE Boost::boost)
 
 add_executable(client
   async/async.h

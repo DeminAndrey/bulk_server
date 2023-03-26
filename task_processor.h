@@ -9,7 +9,6 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread.hpp>
-#include <boost/thread/interruption.hpp>
 
 namespace detail {
 
@@ -25,13 +24,6 @@ public:
   }
 
   void operator()() const {
-    // Resetting interruption.
-    try {
-      boost::this_thread::interruption_point();
-    }
-    catch(const boost::thread_interrupted&) {
-    }
-
     try {
       task_unwrapped_();
     }
